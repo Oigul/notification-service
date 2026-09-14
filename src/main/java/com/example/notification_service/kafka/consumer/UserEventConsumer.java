@@ -22,23 +22,15 @@ public class UserEventConsumer {
 
             UserEvent event = objectMapper.readValue(message, UserEvent.class);
 
-            String email = event.getEmail();
-            String operation = event.getOperation();
-
-            if ("CREATE".equalsIgnoreCase(operation)) {
-                String subject = "Welcome";
-                String text = "Здравствуйте! Ваш аккаунт на сайте ваш сайт был успешно создан.";
-
-                notificationService.sendEmail(email, subject, text);
-
-            } else if ("DELETE".equalsIgnoreCase(operation)) {
-                String subject = "Notice of removal";
-                String text = "Здравствуйте! Ваш аккаунт был удалён.";
-
-                notificationService.sendEmail(email, subject, text);
-            } else {
-                log.info("Unknown transaction received: {}", operation);
+            NotificationService.NotificationTemplate template;
+            try {
+                template = NotificationService.NotificationTemplate.valueOf(event.getOperation().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.info("Unknown transaction received: {}", event.getOperation());
+                return;
             }
+
+            notificationService.sendEmail(event.getEmail(), template.getSubject(), template.getText());
 
         } catch (Exception e) {
             log.error("Error processing message from Kafka: {}", message, e);

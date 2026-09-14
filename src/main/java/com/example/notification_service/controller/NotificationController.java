@@ -25,21 +25,14 @@ public class NotificationController {
 
         log.info("NotificationController::sendNotification email: {} text: {}", email, operation);
 
-        if ("CREATE".equalsIgnoreCase(operation)) {
-            notificationService.sendEmail(
-                    email,
-                    "Welcome",
-                    "Здравствуйте! Ваш аккаунт на сайте ваш сайт был успешно создан."
-            );
-            return true;
-        } else if ("DELETE".equalsIgnoreCase(operation)) {
-            notificationService.sendEmail(
-                    email,
-                    "Notice of removal",
-                    "Здравствуйте! Ваш аккаунт был удалён."
-            );
-            return true;
+        NotificationService.NotificationTemplate template;
+        try {
+            template = NotificationService.NotificationTemplate.valueOf(operation.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return false;
         }
-        return false;
+
+        notificationService.sendEmail(email, template.getSubject(), template.getText());
+        return true;
     }
 }
