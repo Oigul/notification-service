@@ -6,21 +6,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class UserEventConsumer {
     private final NotificationService notificationService;
-    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "user-events", groupId = "notification-group")
-    public void consume(String message) {
+    public void consume(UserEvent event) {
         try {
-            log.info("A message was received from Kafka: {}", message);
-
-            UserEvent event = objectMapper.readValue(message, UserEvent.class);
+            log.info("A message was received from Kafka: {}", event);
 
             NotificationService.NotificationTemplate template;
             try {
@@ -33,7 +29,7 @@ public class UserEventConsumer {
             notificationService.sendEmail(event.getEmail(), template.getSubject(), template.getText());
 
         } catch (Exception e) {
-            log.error("Error processing message from Kafka: {}", message, e);
+            log.error("Error processing message from Kafka: {}", event, e);
         }
     }
 }
