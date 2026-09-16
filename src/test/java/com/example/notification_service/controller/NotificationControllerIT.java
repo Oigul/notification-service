@@ -13,11 +13,10 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -49,7 +48,8 @@ public class NotificationControllerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isOk())
-                .andExpect(content().string("true"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Notification sent successfully"));
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertEquals(1, receivedMessages.length);
@@ -73,7 +73,8 @@ public class NotificationControllerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isOk())
-                .andExpect(content().string("true"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Notification sent successfully"));
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertEquals(1, receivedMessages.length);
@@ -91,8 +92,7 @@ public class NotificationControllerIT {
         mockMvc.perform(post("/api/notifications")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isOk())
-                .andExpect(content().string("false"));
+                .andExpect(status().isBadRequest());
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertEquals(0, receivedMessages.length);

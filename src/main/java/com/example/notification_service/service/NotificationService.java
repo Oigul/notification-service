@@ -1,7 +1,7 @@
 package com.example.notification_service.service;
 
 public interface NotificationService {
-    void sendEmail(String to, String subject, String text);
+    boolean sendEmail(String to, String subject, String text);
 
     enum NotificationTemplate {
         CREATE("Welcome", "Здравствуйте! Ваш аккаунт на сайте ваш сайт был успешно создан."),

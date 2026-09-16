@@ -1,5 +1,6 @@
 package com.example.notification_service.controller;
 
+import com.example.notification_service.dto.NotificationResponse;
 import com.example.notification_service.kafka.events.UserEvent;
 import com.example.notification_service.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -17,22 +18,18 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    // POST http://localhost:8081/api/notifications
     @PostMapping
-    public boolean sendNotification(@RequestBody UserEvent event) {
+    public NotificationResponse sendNotification(@RequestBody UserEvent event) {
         String email = event.getEmail();
         String operation = event.getOperation();
 
         log.info("NotificationController::sendNotification email: {} text: {}", email, operation);
 
-        NotificationService.NotificationTemplate template;
-        try {
-            template = NotificationService.NotificationTemplate.valueOf(operation.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+        NotificationService.NotificationTemplate template = NotificationService.NotificationTemplate.valueOf(operation.toUpperCase());
 
-        notificationService.sendEmail(email, template.getSubject(), template.getText());
-        return true;
+        boolean sent = notificationService.sendEmail(email, template.getSubject(), template.getText());
+
+        return sent ? new NotificationResponse(true, "Notification sent successfully")
+                : new NotificationResponse(false, "Failed to send email");
     }
 }
